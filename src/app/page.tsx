@@ -4,6 +4,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button'
 import { ArrowRight, BookOpen, Clock, Tag, AlertCircle, FileText } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { BookmarkButton } from '@/components/posts/BookmarkButton'
+import { isPostBookmarked } from '@/app/posts/actions/bookmark-actions'
 
 export default async function HomePage({
   searchParams,
@@ -119,48 +121,54 @@ export default async function HomePage({
           </div>
         ) : (
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post: any) => (
-              <div key={post.id} className="group flex flex-col bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden">
-                <div className="h-64 bg-slate-100 relative overflow-hidden">
-                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10" />
-                   <div className="absolute top-6 left-6 z-20">
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white bg-indigo-600 px-3 py-1.5 rounded-full shadow-lg">
-                        {post.categories?.name || 'General'}
-                      </span>
-                   </div>
-                   <div className="absolute inset-0 flex items-center justify-center opacity-20 group-hover:scale-110 transition-transform duration-700">
-                      <FileText className="w-24 h-24 text-indigo-300" />
-                   </div>
-                </div>
-                
-                <div className="p-8 space-y-6 flex-1">
-                  <div className="space-y-3">
-                    <h3 className="text-2xl font-black text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
-                      <Link href={`/posts/${post.slug}`}>{post.title}</Link>
-                    </h3>
-                    <p className="text-slate-500 line-clamp-3 font-medium leading-relaxed">
-                      {post.excerpt || (post.content ? post.content.substring(0, 150) + '...' : 'No description.')}
-                    </p>
+            {posts.map(async (post: any) => {
+              const isBookmarked = await isPostBookmarked(post.id)
+              
+              return (
+                <div key={post.id} className="group flex flex-col bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden">
+                  <div className="h-64 bg-slate-100 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10" />
+                    <div className="absolute top-6 left-6 z-20 flex justify-between w-[calc(100%-3rem)] items-center">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white bg-indigo-600 px-3 py-1.5 rounded-full shadow-lg">
+                          {post.categories?.name || 'General'}
+                        </span>
+                        <BookmarkButton postId={post.id} initialIsBookmarked={isBookmarked} />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-20 group-hover:scale-110 transition-transform duration-700">
+                        <FileText className="w-24 h-24 text-indigo-300" />
+                    </div>
                   </div>
                   
-                  <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-sm">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">
-                        {post.profiles?.display_name?.[0] || 'A'}
-                      </div>
-                      <span className="font-bold text-slate-900">{post.profiles?.display_name || 'Admin'}</span>
+                  <div className="p-8 space-y-6 flex-1">
+                    <div className="space-y-3">
+                      <h3 className="text-2xl font-black text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                        <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                      </h3>
+                      <p className="text-slate-500 line-clamp-3 font-medium leading-relaxed">
+                        {post.excerpt || (post.content ? post.content.substring(0, 150) + '...' : 'No description.')}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
-                      <Clock className="w-3.5 h-3.5" />
-                      {new Date(post.published_at).toLocaleDateString()}
+                    
+                    <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">
+                          {post.profiles?.display_name?.[0] || 'A'}
+                        </div>
+                        <span className="font-bold text-slate-900">{post.profiles?.display_name || 'Admin'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+                        <Clock className="w-3.5 h-3.5" />
+                        {new Date(post.published_at).toLocaleDateString()}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </section>
     </div>
   )
 }
+
